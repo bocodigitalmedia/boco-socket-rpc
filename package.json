@@ -1,0 +1,39 @@
+{
+  "name": "boco-socket-rpc",
+  "version": "0.0.1",
+  "description": "Easy JSON RPC over Web Sockets",
+  "main": "build/index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "./bin/build_and_test",
+    "preversion": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bocodigitalmedia/boco-socket-rpc.git"
+  },
+  "keywords": [
+    "socket",
+    "sockets",
+    "socket.io",
+    "rpc",
+    "websockets",
+    "web",
+    "sockets"
+  ],
+  "author": "Christian Bradley <christianbradley@gmail.com> (https://github.com/christianbradley)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bocodigitalmedia/boco-socket-rpc/issues"
+  },
+  "homepage": "https://github.com/bocodigitalmedia/boco-socket-rpc#readme",
+  "devDependencies": {
+    "boco-markdown-driven": "^0.3.6",
+    "boco-mdd-jasmine-coffee": "^0.3.2"
+  },
+  "dependencies": {
+    "uuid": "^2.0.1"
+  }
+}
