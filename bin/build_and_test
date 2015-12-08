@@ -4,6 +4,24 @@ coffee="$DIR/node_modules/.bin/coffee"
 mdd="$DIR/node_modules/.bin/boco-markdown-driven"
 
 cd $DIR
+
+# clean 
+find build -name *.js -print0 | xargs -0 rm -f
+find build -name *.map -print0 | xargs -0 rm -f
+find spec -name *.spec.coffee -print0 | xargs -0 rm -f
+
+# build source
+rm -rf source/**/*.js source/**/*.map
 $coffee -cmb -o build source
+
+# build specs
+rm -rf spec/**/*.spec.coffee
 $mdd -c markdown-driven.json "docs/**/*.coffee.md"
+
+# build README 
+cat ./docs/boco-socket-rpc.coffee.md > README.md
+echo -e "\n--------------------------------------------------------------------------------\n" >> README.md
+cat LICENSE >> README.md
+
+# run specs
 NODE_PATH=$NODE_PATH:$DIR $coffee ./spec/support/jasmine-runner.coffee
