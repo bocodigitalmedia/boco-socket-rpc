@@ -3,6 +3,7 @@ previous_pwd=$(pwd)
 node_bin="./node_modules/.bin"
 package_name=$(npm view . name)
 package_version=$(npm view . version)
+global_object_name=$(node -e "console.log(require('./package.json').globalObjectName)")
 
 function clean_dir() {
   find $1 -name "$2" -print0 | xargs -0 rm -rf
@@ -19,7 +20,7 @@ function clean() {
 function build() {
   echo "* build $package_name@$package_version"
   $node_bin/coffee -cmb -o build source
-  $node_bin/browserify -e index.js -s $package_name -o dist/$package_name.js
+  $node_bin/browserify -e index.js -s $global_object_name -o dist/$package_name.js
   $node_bin/uglifyjs dist/$package_name.js -o dist/$package_name.min.js
   $node_bin/boco-markdown-driven -c markdown-driven.json "docs/**/*.coffee.md"
   build_readme

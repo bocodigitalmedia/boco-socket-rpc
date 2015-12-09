@@ -1,7 +1,7 @@
-this.testSocketRPC = function(io, SocketRPC) {
+this.testSocketRPC = function(io, BocoSocketRPC) {
 
   var socket = io();
-  var client = new SocketRPC.Client();
+  var client = new BocoSocketRPC.Client();
   var request = client.constructRequest({ method: "add", params: [2, 2] });
 
   client.attachSocket(socket);

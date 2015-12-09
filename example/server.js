@@ -8,11 +8,14 @@ var Path = require("path");
 var app = Express();
 var server = HTTP.createServer(app);
 var publicDir = Path.resolve(__dirname, "public");
-var bowerComponentsDir = Path.resolve(__dirname, "bower_components");
+var componentsDir = Path.resolve(__dirname, "bower_components");
+var packageDir = Path.resolve(__dirname, "..");
+
 var io = SocketIO(server);
 
 app.use(Express.static(publicDir));
-app.use("/bower_components", Express.static(bowerComponentsDir));
+app.use("/bower_components", Express.static(componentsDir));
+app.use("/bower_components/boco-socket-rpc", Express.static(packageDir));
 
 io.on("connection", function(socket) {
   var rpcServer = new SocketRPC.Server();
