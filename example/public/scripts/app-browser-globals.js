@@ -1,0 +1,1 @@
+testSocketRPC(io, bocoSocketRpc);

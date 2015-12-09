@@ -7,10 +7,12 @@ var Path = require("path");
 
 var app = Express();
 var server = HTTP.createServer(app);
-var publicDir = Path.join(__dirname, "public");
+var publicDir = Path.resolve(__dirname, "public");
+var bowerComponentsDir = Path.resolve(__dirname, "bower_components");
 var io = SocketIO(server);
 
 app.use(Express.static(publicDir));
+app.use("/bower_components", Express.static(bowerComponentsDir));
 
 io.on("connection", function(socket) {
   var rpcServer = new SocketRPC.Server();

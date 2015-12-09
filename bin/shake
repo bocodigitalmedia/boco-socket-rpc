@@ -1,0 +1,42 @@
+#!/bin/bash
+previous_pwd=$(pwd)
+node_bin="./node_modules/.bin"
+package_name=$(npm view . name)
+package_version=$(npm view . version)
+
+function clean_dir() {
+  find $1 -name "$2" -print0 | xargs -0 rm -rf
+}
+
+function clean() {
+  echo "* clean $package_name"
+  clean_dir build "*.js"
+  clean_dir build "*.map"
+  clean_dir spec "*.spec.coffee"
+  clean_dir dist "*.*"
+}
+
+function build() {
+  echo "* build $package_name@$package_version"
+  $node_bin/coffee -cmb -o build source
+  $node_bin/browserify -e index.js -s $package_name -o dist/$package_name.js
+  $node_bin/uglifyjs dist/$package_name.js -o dist/$package_name.min.js
+  $node_bin/boco-markdown-driven -c markdown-driven.json "docs/**/*.coffee.md"
+  build_readme
+}
+
+function build_readme() {
+  cat ./docs/boco-socket-rpc.coffee.md > README.md
+  echo -e "\n---\n" >> README.md
+  cat LICENSE >> README.md
+}
+
+function run_specs() {
+  echo "* run_specs $package_name"
+  # run specs
+  NODE_PATH=$NODE_PATH:. $node_bin/coffee ./spec/support/jasmine-runner.coffee
+}
+
+argv=("$*")
+for arg in $argv; do eval ${arg}; done
+cd $previous_pwd
