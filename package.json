@@ -8,9 +8,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "./bin/shake clean build run_specs",
-    "preversion": "./bin/shake reinstall && npm test",
-    "version": "./bin/shake bump"
+    "test": "./bin/shake npm_test",
+    "preversion": "./bin/shake npm_preversion",
+    "version": "./bin/shake npm_version",
+    "postversion": "./bin/shake npm_postversion"
   },
   "repository": {
     "type": "git",
