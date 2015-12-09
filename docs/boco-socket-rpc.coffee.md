@@ -10,6 +10,10 @@ SocketRPC = require "boco-socket-rpc"
 
 * [Installation]
 * [Usage]
+  * [Sending Requests]
+  * [Errors]
+    * [InvalidRequest]
+    * [MethodNotFound]
 
 ## Installation
 
@@ -19,34 +23,44 @@ $ npm install boco-socket-rpc
 
 ## Usage
 
+Let's create an event emitter as a mock socket for testing:
+
 ```coffee
-# Let's use an event emitter as a mock socket for testing:
 EventEmitter = require("events").EventEmitter
 socket = new EventEmitter()
+```
 
-# Create a server and register some RPC methods
+Create a `Server`:
+
+```coffee
 server = new SocketRPC.Server
+server.attachSocket socket
 
 server.registerMethod "add", (a, b, done) ->
   done null, a + b
 
 server.registerMethod "multiply", (a, b, done) ->
   done null, a * b
+```
 
-# Attach the socket to initialize event listeners
-server.attachSocket socket
+Create a `Client`:
 
-# Create a client
+```coffee
 client = new SocketRPC.Client
 client.attachSocket socket
+```
 
-# Detach sockets when they are disconnected
+Make sure to detach sockets when they have disconnected:
+
+```coffee
 socket.on "disconnect", ->
   server.detachSocket()
   client.detachSocket()
 ```
 
-Sending requests calls the remote method and returns the result:
+### Sending Requests
+
+Sending a request calls the remote method and returns the result:
 
 ```coffee
 client.sendRequest method: "add", params: [2, 3], (error, result) ->
@@ -64,6 +78,48 @@ client.sendRequest method: "multiply", params: [2, 3], (error, result) ->
   ok()
 ```
 
+### Errors
 
-[Installation]: #Installation
+#### InvalidRequest
+
+Sending an invalid request emits an `InvalidRequest` error:
+
+```coffee
+request = id: 1, method: null, params: null
+
+client.on "error", (error) ->
+  expect(error.name).toEqual "InvalidRequest"
+  expect(error.code).toEqual -32600
+  expect(error.message).toEqual "Invalid Request"
+  expect(error.request.id).toEqual request.id
+  ok()
+
+client.sendRequest request
+```
+
+#### MethodNotFound
+
+Sending a request for a method that has not been registered with the server emits a `MethodNotFound` error:
+
+```coffee
+request = id: 2, method: "subtract", params: []
+
+client.on "error", (error) ->
+  expect(error.name).toEqual "MethodNotFound"
+  expect(error.code).toEqual -32601
+  expect(error.message).toEqual "Method not found"
+  expect(error.request.id).toEqual request.id
+  ok()
+
+client.sendRequest request
+
+```
+
+[Installation]: #installation
 [Usage]: #usage
+[Sending Requests]: #sending-requests
+[Errors]: #errors
+[InvalidRequest]: #invalidrequest
+[MethodNotFound]: #methodnotfound
+
+[json-rpc-errors]: http://www.jsonrpc.org/specification#error_object
