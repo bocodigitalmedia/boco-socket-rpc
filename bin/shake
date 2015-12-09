@@ -2,14 +2,17 @@
 previous_pwd=$(pwd)
 node_bin="./node_modules/.bin"
 package_name=$(npm view . name)
-package_version=$(npm view . version)
 global_object_name=$(node -e "console.log(require('./package.json').globalObjectName)")
+
+function package_version() {
+  node -e "console.log(require('./package.json').version)"
+}
 
 function clean_dir() {
   find $1 -name "$2" -print0 | xargs -0 rm -rf
 }
 
-function clean() {
+function clean_project() {
   echo "* clean $package_name"
   clean_dir build "*.js"
   clean_dir build "*.map"
@@ -21,10 +24,6 @@ function build_source() {
   $node_bin/coffee -cmb -o build source
 }
 
-function license_dist() {
-  ./bin/license-js LICENSE dist/$package_name.js dist/$package_name.min.js
-}
-
 function build_dist() {
   $node_bin/browserify -e index.js -s $global_object_name -o dist/$package_name.js
   $node_bin/uglifyjs dist/$package_name.js -o dist/$package_name.min.js
@@ -34,8 +33,13 @@ function build_specs() {
   $node_bin/boco-markdown-driven -c markdown-driven.json "docs/**/*.coffee.md"
 }
 
-function build() {
-  echo "* build $package_name@$package_version"
+function build_readme() {
+  cat ./docs/boco-socket-rpc.coffee.md > README.md
+  echo -e "\n---\n" >> README.md
+  cat LICENSE >> README.md
+}
+
+function build_project() {
   build_source
   build_dist
   build_specs
@@ -43,16 +47,42 @@ function build() {
   license_dist
 }
 
-function build_readme() {
-  cat ./docs/boco-socket-rpc.coffee.md > README.md
-  echo -e "\n---\n" >> README.md
-  cat LICENSE >> README.md
+function license_dist() {
+  ./bin/license-js LICENSE dist/$package_name.js dist/$package_name.min.js
+}
+
+function reinstall() {
+  npm install && npm update && npm prune
+}
+
+function bump_bower() {
+  ./bin/bump $(package_version) bower.json
 }
 
 function run_specs() {
   echo "* run_specs $package_name"
   # run specs
   NODE_PATH=$NODE_PATH:. $node_bin/coffee ./spec/support/jasmine-runner.coffee
+}
+
+function npm_test() {
+  reinstall && clean_project && build_project && run_specs
+}
+
+function npm_preversion() {
+  npm_test
+}
+
+function npm_version() {
+  bump_bower && git add -u
+}
+
+function npm_postversion() {
+  version = $(package_version)
+
+  git commit -p --amend
+  git rebase -i master
+  git tag -d v$(package_version) && git tag v$(package_version)
 }
 
 argv=("$*")

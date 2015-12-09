@@ -926,8 +926,10 @@ module.exports={
     "doc": "docs"
   },
   "scripts": {
-    "test": "./bin/shake clean build run_specs",
-    "preversion": "npm test"
+    "test": "./bin/shake npm_test",
+    "preversion": "./bin/shake npm_preversion",
+    "version": "./bin/shake npm_version",
+    "postversion": "./bin/shake npm_postversion"
   },
   "repository": {
     "type": "git",
@@ -951,6 +953,7 @@ module.exports={
   "devDependencies": {
     "boco-markdown-driven": "^0.3.6",
     "boco-mdd-jasmine-coffee": "^0.3.2",
+    "bower": "^1.7.0",
     "browserify": "^12.0.1",
     "uglify-js": "^2.6.1"
   },
