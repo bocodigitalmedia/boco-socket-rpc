@@ -1,16 +1,38 @@
 configure = ($ = {}) ->
   $.generateId ?= -> require("uuid").v4()
   $.requestEventName ?= "rpc.request"
+  $.responseEventName ?= "rpc.response"
+  $.errorEventName ?= "rpc.error"
+  $.EventEmitter ?= require("events").EventEmitter
+
+  class RequestError extends Error
+    name: null
+    code: null
+    message: null
+    request: null
+
+    constructor: (props) ->
+      @[key] = val for own key, val of props
+      @name ?= @constructor.name
+      @code ?= @constructor.code
+      @message ?= @constructor.message
+      Error.captureStackTrace @, @constructor
+
+  class InvalidRequest extends RequestError
+    @code: -32600
+    @message: "Invalid Request"
+
+  class MethodNotFound extends RequestError
+    @code: -32601
+    @message: "Method not found"
 
   class Request
     id: null
     method: null
     params: null
-    generateId: $.generateId
 
     constructor: (props) ->
-      @[key] = val for own key, val of props when @[key] isnt undefined
-      @id ?= @generateId() if @generateId?
+      @[key] = val for own key, val of props
 
   class Response
     id: null
@@ -26,13 +48,16 @@ configure = ($ = {}) ->
 
     requestEventName: null
     responseEventName: null
+    errorEventName: null
     socket: null
     socketListeners: null
+    generateRequestId: $.generateId
 
     constructor: (props) ->
       @[key] = val for own key, val of props
       @requestEventName ?= $.requestEventName
       @responseEventName ?= $.responseEventName
+      @errorEventName ?= $.errorEventName
       @socketListeners ?= {}
 
     attachSocket: (socket) ->
@@ -59,7 +84,9 @@ configure = ($ = {}) ->
       @removeSocketListener eventName for own eventName of @socketListeners
 
     constructRequest: (props) ->
-      new @constructor.Request props
+      request = new @constructor.Request props
+      request.id ?= @generateRequestId()
+      request
 
     constructResponse: (props) ->
       new @constructor.Response props
@@ -77,9 +104,25 @@ configure = ($ = {}) ->
     addSocketListeners: ->
       @addSocketListener @requestEventName, @handleRequest.bind(@)
 
+    emitInvalidRequest: (request) ->
+      error = new InvalidRequest request: request
+      @socket.emit @errorEventName, error
+
+    emitMethodNotFound: (request) ->
+      error = new MethodNotFound request: request
+      @socket.emit @errorEventName, error
+
+    isValidRequest: (request) ->
+      {id, method, params} = request
+      id? and method? and Array.isArray(params)
+
     handleRequest: (props) ->
       request = @constructRequest props
+      return @emitInvalidRequest(request) unless @isValidRequest(request)
+
       method = @methods[request.method]
+      return @emitMethodNotFound(request) unless method?
+
       method.call null, props.params..., (error, result) =>
         @sendResponse id: request.id, error: error, result: result
 
@@ -92,10 +135,15 @@ configure = ($ = {}) ->
 
     constructor: (props) ->
       super props
+      @emitter ?= new $.EventEmitter
       @responseHandlers ?= {}
+
+    on: (args...) ->
+      @emitter.on args...
 
     addSocketListeners: ->
       @addSocketListener @responseEventName, @handleResponse.bind(@)
+      @addSocketListener @errorEventName, @handleError.bind(@)
 
     sendRequest: (props, responseHandler) ->
       request = @constructRequest props
@@ -106,6 +154,9 @@ configure = ($ = {}) ->
       response = @constructResponse props
       responseHandler = @responseHandlers[response.id]
       responseHandler.call null, response.error, response.result if responseHandler?
+
+    handleError: (error) ->
+      @emitter.emit "error", error
 
   SocketRPC =
     configuration: $
