@@ -124,7 +124,7 @@ client.sendRequest request
 
 [json-rpc-errors]: http://www.jsonrpc.org/specification#error_object
 
---------------------------------------------------------------------------------
+---
 
 The MIT License (MIT)
 
