@@ -187,7 +187,8 @@ configure = function($) {
     Base.prototype.addSocketListeners = function() {};
 
     Base.prototype.removeSocketListener = function(eventName) {
-      return this.socket.removeListener(eventName, this.socketListeners[eventName]);
+      this.socket.removeListener(eventName, this.socketListeners[eventName]);
+      return delete this.socketListeners[name];
     };
 
     Base.prototype.removeSocketListeners = function() {

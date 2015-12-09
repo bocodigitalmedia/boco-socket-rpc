@@ -79,6 +79,7 @@ configure = ($ = {}) ->
 
     removeSocketListener: (eventName) ->
       @socket.removeListener eventName, @socketListeners[eventName]
+      delete @socketListeners[name]
 
     removeSocketListeners: ->
       @removeSocketListener eventName for own eventName of @socketListeners
