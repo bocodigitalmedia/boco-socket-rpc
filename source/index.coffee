@@ -159,7 +159,7 @@ configure = ($ = {}) ->
     handleError: (error) ->
       @emitter.emit "error", error
 
-  SocketRPC =
+  BocoSocketRPC =
     configuration: $
     configure: configure
     Request: Request
@@ -169,3 +169,12 @@ configure = ($ = {}) ->
     Client: Client
 
 module.exports = configure()
+
+do ->
+  globalObjectName = require("../package.json").globalObjectName;
+  globalObject = (-> @).apply(null)
+  previousValue = globalObject[globalObjectName]
+
+  module.exports.noConflict = ->
+    globalObject[globalObjectName] = previousValue
+    module.exports

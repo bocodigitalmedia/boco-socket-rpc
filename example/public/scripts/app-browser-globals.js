@@ -1,1 +1,3 @@
-testSocketRPC(io, bocoSocketRpc);
+(function() {
+  testSocketRPC(io, BocoSocketRPC.noConflict());
+})();
