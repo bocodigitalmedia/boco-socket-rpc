@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var Express = require("express");
 var SocketIO = require("socket.io");
-var SocketRPC = require("../");
+var SocketRPC = require("boco-socket-rpc");
 var HTTP = require("http");
 var Path = require("path");
 
