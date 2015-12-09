@@ -1,18 +1,15 @@
 $files = {}
 
 describe "boco-socket-rpc", ->
-  [SocketRPC] = []
-
-  beforeEach ->
-    SocketRPC = require "boco-socket-rpc"
 
   describe "Usage", ->
-    [EventEmitter, socket, server, a, b, done, client] = []
+    [BocoSocketRPC, EventEmitter, socket, server, a, b, done, client] = []
 
     beforeEach ->
+      BocoSocketRPC = require "boco-socket-rpc"
       EventEmitter = require("events").EventEmitter
       socket = new EventEmitter()
-      server = new SocketRPC.Server
+      server = new BocoSocketRPC.Server
       server.attachSocket socket
       
       server.registerMethod "add", (a, b, done) ->
@@ -20,7 +17,7 @@ describe "boco-socket-rpc", ->
       
       server.registerMethod "multiply", (a, b, done) ->
         done null, a * b
-      client = new SocketRPC.Client
+      client = new BocoSocketRPC.Client
       client.attachSocket socket
       socket.on "disconnect", ->
         server.detachSocket()
