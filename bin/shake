@@ -17,13 +17,30 @@ function clean() {
   clean_dir dist "*.*"
 }
 
-function build() {
-  echo "* build $package_name@$package_version"
+function build_source() {
   $node_bin/coffee -cmb -o build source
+}
+
+function license_dist() {
+  ./bin/license-js LICENSE dist/$package_name.js dist/$package_name.min.js
+}
+
+function build_dist() {
   $node_bin/browserify -e index.js -s $global_object_name -o dist/$package_name.js
   $node_bin/uglifyjs dist/$package_name.js -o dist/$package_name.min.js
+}
+
+function build_specs() {
   $node_bin/boco-markdown-driven -c markdown-driven.json "docs/**/*.coffee.md"
+}
+
+function build() {
+  echo "* build $package_name@$package_version"
+  build_source
+  build_dist
+  build_specs
   build_readme
+  license_dist
 }
 
 function build_readme() {
