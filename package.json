@@ -1,13 +1,14 @@
 {
   "name": "boco-socket-rpc",
-  "version": "0.2.0",
+  "globalObjectName": "BocoSocketRPC",
+  "version": "0.3.1",
   "description": "Easy JSON RPC over Web Sockets",
-  "main": "build/index.js",
+  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "./bin/build_and_test",
+    "test": "./bin/shake clean build run_specs",
     "preversion": "npm test"
   },
   "repository": {
@@ -31,7 +32,9 @@
   "homepage": "https://github.com/bocodigitalmedia/boco-socket-rpc#readme",
   "devDependencies": {
     "boco-markdown-driven": "^0.3.6",
-    "boco-mdd-jasmine-coffee": "^0.3.2"
+    "boco-mdd-jasmine-coffee": "^0.3.2",
+    "browserify": "^12.0.1",
+    "uglify-js": "^2.6.1"
   },
   "dependencies": {
     "uuid": "^2.0.1"

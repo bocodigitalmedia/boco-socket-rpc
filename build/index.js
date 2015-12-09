@@ -5,7 +5,7 @@ var configure,
   slice = [].slice;
 
 configure = function($) {
-  var Base, Client, InvalidRequest, MethodNotFound, Request, RequestError, Response, Server, SocketRPC;
+  var Base, BocoSocketRPC, Client, InvalidRequest, MethodNotFound, Request, RequestError, Response, Server;
   if ($ == null) {
     $ = {};
   }
@@ -187,7 +187,8 @@ configure = function($) {
     Base.prototype.addSocketListeners = function() {};
 
     Base.prototype.removeSocketListener = function(eventName) {
-      return this.socket.removeListener(eventName, this.socketListeners[eventName]);
+      this.socket.removeListener(eventName, this.socketListeners[eventName]);
+      return delete this.socketListeners[eventName];
     };
 
     Base.prototype.removeSocketListeners = function() {
@@ -338,7 +339,7 @@ configure = function($) {
     return Client;
 
   })(Base);
-  return SocketRPC = {
+  return BocoSocketRPC = {
     configuration: $,
     configure: configure,
     Request: Request,
@@ -350,5 +351,18 @@ configure = function($) {
 };
 
 module.exports = configure();
+
+(function() {
+  var globalObject, globalObjectName, previousValue;
+  globalObjectName = require("../package.json").globalObjectName;
+  globalObject = (function() {
+    return this;
+  }).apply(null);
+  previousValue = globalObject[globalObjectName];
+  return module.exports.noConflict = function() {
+    globalObject[globalObjectName] = previousValue;
+    return module.exports;
+  };
+})();
 
 //# sourceMappingURL=index.js.map

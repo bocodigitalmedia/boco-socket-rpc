@@ -1,0 +1,32 @@
+{
+  "name": "boco-socket-rpc",
+  "main": "dist/boco-socket-rpc.js",
+  "version": "0.3.1",
+  "description": "Easy JSON RPC over Web Sockets",
+  "homepage": "https://github.com/bocodigitalmedia/boco-socket-rpc",
+  "authors": [
+    "Christian Bradley <christian.bradley@bocodigital.com>"
+  ],
+  "keywords": [
+    "socket",
+    "sockets",
+    "socket.io",
+    "rpc",
+    "websockets",
+    "web",
+    "sockets"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "spec",
+    "markdown-driven.json"
+  ]
+}
