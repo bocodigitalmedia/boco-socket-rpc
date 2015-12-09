@@ -928,7 +928,8 @@ module.exports={
   "scripts": {
     "test": "./bin/shake npm_test",
     "preversion": "./bin/shake npm_preversion",
-    "version": "./bin/shake npm_version"
+    "version": "./bin/shake npm_version",
+    "postversion": "./bin/shake npm_postversion"
   },
   "repository": {
     "type": "git",

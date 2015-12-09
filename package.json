@@ -1,7 +1,7 @@
 {
   "name": "boco-socket-rpc",
   "globalObjectName": "BocoSocketRPC",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Easy JSON RPC over Web Sockets",
   "main": "index.js",
   "directories": {
