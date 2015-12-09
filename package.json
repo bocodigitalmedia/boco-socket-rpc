@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "./bin/shake clean build run_specs",
-    "preversion": "npm test"
+    "preversion": "./bin/shake reinstall && npm test",
+    "version": "./bin/shake bump"
   },
   "repository": {
     "type": "git",

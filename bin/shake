@@ -34,6 +34,14 @@ function build_specs() {
   $node_bin/boco-markdown-driven -c markdown-driven.json "docs/**/*.coffee.md"
 }
 
+function reinstall() {
+  rm -rf node_modules && npm install
+}
+
+function bump() {
+  $node_bin/bower version $package_version
+}
+
 function build() {
   echo "* build $package_name@$package_version"
   build_source
