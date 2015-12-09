@@ -2,10 +2,6 @@
 
 Easy JSON RPC over Sockets
 
-```coffee
-SocketRPC = require "boco-socket-rpc"
-```
-
 ## Table of Contents
 
 * [Installation]
@@ -17,11 +13,26 @@ SocketRPC = require "boco-socket-rpc"
 
 ## Installation
 
+For node.js via [npm]
+
 ```sh
 $ npm install boco-socket-rpc
 ```
 
+For browsers via [bower]
+
+```sh
+$ bower install boco-socket-rpc
+```
+
 ## Usage
+
+```coffee
+BocoSocketRPC = require "boco-socket-rpc"
+```
+```html
+<script src="boco-socket-rpc.js"></script>
+```
 
 Let's create an event emitter as a mock socket for testing:
 
@@ -33,7 +44,7 @@ socket = new EventEmitter()
 Create a `Server`:
 
 ```coffee
-server = new SocketRPC.Server
+server = new BocoSocketRPC.Server
 server.attachSocket socket
 
 server.registerMethod "add", (a, b, done) ->
@@ -46,7 +57,7 @@ server.registerMethod "multiply", (a, b, done) ->
 Create a `Client`:
 
 ```coffee
-client = new SocketRPC.Client
+client = new BocoSocketRPC.Client
 client.attachSocket socket
 ```
 
@@ -123,3 +134,5 @@ client.sendRequest request
 [MethodNotFound]: #methodnotfound
 
 [json-rpc-errors]: http://www.jsonrpc.org/specification#error_object
+[npm]: http://npmjs.org
+[bower]: http://bower.io
