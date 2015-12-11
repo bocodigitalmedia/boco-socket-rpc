@@ -66,11 +66,11 @@ function run_specs() {
 }
 
 function npm_test() {
-  reinstall && clean_project && build_project && run_specs
+  clean_project && build_project && run_specs
 }
 
 function npm_preversion() {
-  npm_test
+  reinstall && npm_test
 }
 
 function npm_version() {
