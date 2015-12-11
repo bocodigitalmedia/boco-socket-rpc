@@ -977,8 +977,6 @@ module.exports={
     "boco-mdd-jasmine-coffee": "^0.3.2",
     "bower": "^1.7.0",
     "browserify": "^12.0.1",
-    "socket.io": "^1.3.7",
-    "socket.io-client": "^1.3.7",
     "uglify-js": "^2.6.1"
   },
   "dependencies": {
