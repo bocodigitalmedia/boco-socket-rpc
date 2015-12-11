@@ -9,7 +9,7 @@ configure = ($ = {}) ->
     name: null
     code: null
     message: null
-    request: null
+    data: null
 
     constructor: (props) ->
       @[key] = val for own key, val of props
@@ -54,11 +54,13 @@ configure = ($ = {}) ->
     generateRequestId: $.generateId
 
     constructor: (props) ->
-      @[key] = val for own key, val of props
+      @[key] = val for own key, val of props when key isnt "socket"
       @requestEventName ?= $.requestEventName
       @responseEventName ?= $.responseEventName
       @errorEventName ?= $.errorEventName
       @socketListeners ?= {}
+      @attachSocket props.socket
+
 
     attachSocket: (socket) ->
       @disconnect() if @socket?
@@ -106,11 +108,11 @@ configure = ($ = {}) ->
       @addSocketListener @requestEventName, @handleRequest.bind(@)
 
     emitInvalidRequest: (request) ->
-      error = new InvalidRequest request: request
+      error = new InvalidRequest data: { request: request }
       @socket.emit @errorEventName, error
 
     emitMethodNotFound: (request) ->
-      error = new MethodNotFound request: request
+      error = new MethodNotFound data: { request: request }
       @socket.emit @errorEventName, error
 
     isValidRequest: (request) ->
@@ -124,8 +126,11 @@ configure = ($ = {}) ->
       method = @methods[request.method]
       return @emitMethodNotFound(request) unless method?
 
-      method.call null, props.params..., (error, result) =>
+      done = (error, result) =>
         @sendResponse id: request.id, error: error, result: result
+
+      try method.call(null, request.params..., done)
+      catch error then done error
 
     sendResponse: (props) ->
       response = @constructResponse props
@@ -150,6 +155,9 @@ configure = ($ = {}) ->
       request = @constructRequest props
       @responseHandlers[request.id] = responseHandler
       @socket.emit @requestEventName, request
+
+    callMethod: (method, params..., done) ->
+      @sendRequest method: method, params: params, done
 
     handleResponse: (props) ->
       response = @constructResponse props
