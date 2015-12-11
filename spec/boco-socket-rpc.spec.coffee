@@ -3,66 +3,75 @@ $files = {}
 describe "boco-socket-rpc", ->
 
   describe "Usage", ->
-    [BocoSocketRPC, EventEmitter, socket, server, a, b, done, client] = []
+    [BocoSocketRPC, EventEmitter, serverSocket, socket, server, sender, done, error, clientSocket, client] = []
 
     beforeEach ->
       BocoSocketRPC = require "boco-socket-rpc"
       EventEmitter = require("events").EventEmitter
-      socket = new EventEmitter()
-      server = new BocoSocketRPC.Server
-      server.attachSocket socket
       
-      server.registerMethod "add", (a, b, done) ->
-        done null, a + b
+      # server
+      serverSocket = new EventEmitter()
       
-      server.registerMethod "multiply", (a, b, done) ->
-        done null, a * b
-      client = new BocoSocketRPC.Client
-      client.attachSocket socket
-      socket.on "disconnect", ->
-        server.detachSocket()
-        client.detachSocket()
+      serverSocket.on "connection", (socket) ->
+        server = new BocoSocketRPC.Server socket: socket
+      
+        server.registerMethod "hello", (sender, done) ->
+          done null, "Hello, #{sender}!"
+      
+        server.registerMethod "throwIt", (error, done) ->
+          throw error
+      
+      # client
+      clientSocket = new EventEmitter()
+      client = new BocoSocketRPC.Client socket: clientSocket
+      
+      # mock connecting
+      serverSocket.emit "connection", clientSocket
 
-    describe "Sending Requests", ->
+    describe "Calling a Method", ->
 
-      it "Sending a request calls the remote method and returns the result:", (ok) ->
-        client.sendRequest method: "add", params: [2, 3], (error, result) ->
+      it "The result of the remote method is returned asynchronously.", (ok) ->
+        client.callMethod "hello", "client", (error, result) ->
           throw error if error?
-          expect(result).toEqual 5
+          expect(result).toEqual "Hello, client!"
           ok()
 
-      it "Correlation ids are automatically assigned to make sure response handlers receive the correct results:", (ok) ->
-        client.sendRequest method: "multiply", params: [2, 3], (error, result) ->
-          throw error if error?
-          expect(result).toEqual 6
+      it "Errors thrown by the remote method are returned as well.", (ok) ->
+        client.callMethod "throwIt", "foo!", (error, result) ->
+          expect(result).toEqual undefined
+          expect(error).toEqual "foo!"
           ok()
 
-    describe "Errors", ->
+    describe "Sending a Request", ->
+
+      it "You can send a [json-rpc]-formatted request manually using the `sendRequest` method:", (ok) ->
+        client.sendRequest method: "hello", params: ["client"], (error, result) ->
+          throw error if error?
+          expect(result).toEqual "Hello, client!"
+          ok()
+
+    describe "Request Errors", ->
 
       describe "InvalidRequest", ->
 
-        it "Sending an invalid request emits an `InvalidRequest` error:", (ok) ->
-          request = id: 1, method: null, params: null
-          
+        it "An `InvalidRequest` error will be emitted if the data provided is not a valid `Request` object:", (ok) ->
           client.on "error", (error) ->
-            expect(error.name).toEqual "InvalidRequest"
             expect(error.code).toEqual -32600
             expect(error.message).toEqual "Invalid Request"
-            expect(error.request.id).toEqual request.id
+            expect(error.data.request.method).toEqual null
             ok()
           
-          client.sendRequest request
+          client.sendRequest method: null, (error, result) ->
+            throw Error("Should not get here")
 
       describe "MethodNotFound", ->
 
-        it "Sending a request for a method that has not been registered with the server emits a `MethodNotFound` error:", (ok) ->
-          request = id: 2, method: "subtract", params: []
-          
+        it "A `MethodNotFound` error will be emitted if the requested method was not registered by the server:", (ok) ->
           client.on "error", (error) ->
-            expect(error.name).toEqual "MethodNotFound"
             expect(error.code).toEqual -32601
             expect(error.message).toEqual "Method not found"
-            expect(error.request.id).toEqual request.id
+            expect(error.data.request.method).toEqual "goodbye"
             ok()
           
-          client.sendRequest request
+          client.sendRequest method: "goodbye", params: [], (error, result) ->
+            throw Error("Should not get here")

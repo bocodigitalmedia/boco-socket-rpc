@@ -60,7 +60,7 @@ configure = function($) {
 
     RequestError.prototype.message = null;
 
-    RequestError.prototype.request = null;
+    RequestError.prototype.data = null;
 
     function RequestError(props) {
       var key, val;
@@ -169,10 +169,15 @@ configure = function($) {
 
     function Base(props) {
       var key, val;
+      if (props == null) {
+        props = {};
+      }
       for (key in props) {
         if (!hasProp.call(props, key)) continue;
         val = props[key];
-        this[key] = val;
+        if (key !== "socket") {
+          this[key] = val;
+        }
       }
       if (this.requestEventName == null) {
         this.requestEventName = $.requestEventName;
@@ -186,20 +191,18 @@ configure = function($) {
       if (this.socketListeners == null) {
         this.socketListeners = {};
       }
+      if (props.socket != null) {
+        this.attachSocket(props.socket);
+      }
     }
 
     Base.prototype.attachSocket = function(socket) {
-      if (this.socket != null) {
-        this.disconnect();
-      }
+      this.detachSocket();
       this.socket = socket;
       return this.addSocketListeners();
     };
 
     Base.prototype.detachSocket = function() {
-      if (this.socket == null) {
-        return;
-      }
       this.removeSocketListeners();
       return this.socket = null;
     };
@@ -266,7 +269,9 @@ configure = function($) {
     Server.prototype.emitInvalidRequest = function(request) {
       var error;
       error = new InvalidRequest({
-        request: request
+        data: {
+          request: request
+        }
       });
       return this.socket.emit(this.errorEventName, error);
     };
@@ -274,7 +279,9 @@ configure = function($) {
     Server.prototype.emitMethodNotFound = function(request) {
       var error;
       error = new MethodNotFound({
-        request: request
+        data: {
+          request: request
+        }
       });
       return this.socket.emit(this.errorEventName, error);
     };
@@ -286,7 +293,7 @@ configure = function($) {
     };
 
     Server.prototype.handleRequest = function(props) {
-      var method, request;
+      var done, error, error1, method, request;
       request = this.constructRequest(props);
       if (!this.isValidRequest(request)) {
         return this.emitInvalidRequest(request);
@@ -295,7 +302,7 @@ configure = function($) {
       if (method == null) {
         return this.emitMethodNotFound(request);
       }
-      return method.call.apply(method, [null].concat(slice.call(props.params), [(function(_this) {
+      done = (function(_this) {
         return function(error, result) {
           return _this.sendResponse({
             id: request.id,
@@ -303,7 +310,13 @@ configure = function($) {
             result: result
           });
         };
-      })(this)]));
+      })(this);
+      try {
+        return method.call.apply(method, [null].concat(slice.call(request.params), [done]));
+      } catch (error1) {
+        error = error1;
+        return done(error);
+      }
     };
 
     Server.prototype.sendResponse = function(props) {
@@ -346,6 +359,15 @@ configure = function($) {
       request = this.constructRequest(props);
       this.responseHandlers[request.id] = responseHandler;
       return this.socket.emit(this.requestEventName, request);
+    };
+
+    Client.prototype.callMethod = function() {
+      var done, i, method, params;
+      method = arguments[0], params = 3 <= arguments.length ? slice.call(arguments, 1, i = arguments.length - 1) : (i = 1, []), done = arguments[i++];
+      return this.sendRequest({
+        method: method,
+        params: params
+      }, done);
     };
 
     Client.prototype.handleResponse = function(props) {
@@ -919,7 +941,7 @@ module.exports = uuid;
 module.exports={
   "name": "boco-socket-rpc",
   "globalObjectName": "BocoSocketRPC",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Easy JSON RPC over Web Sockets",
   "main": "index.js",
   "directories": {

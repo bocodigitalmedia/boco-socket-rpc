@@ -66,11 +66,11 @@ function run_specs() {
 }
 
 function npm_test() {
-  reinstall && clean_project && build_project && run_specs
+  clean_project && build_project && run_specs
 }
 
 function npm_preversion() {
-  npm_test
+  reinstall && npm_test
 }
 
 function npm_version() {
@@ -81,7 +81,6 @@ function npm_postversion() {
   version = $(package_version)
 
   git commit -p --amend
-  git rebase -i master
   git tag -d v$(package_version) && git tag v$(package_version)
 }
 
