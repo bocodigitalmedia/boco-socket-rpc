@@ -144,6 +144,9 @@ configure = function($) {
 
     function Base(props) {
       var key, val;
+      if (props == null) {
+        props = {};
+      }
       for (key in props) {
         if (!hasProp.call(props, key)) continue;
         val = props[key];
@@ -163,21 +166,20 @@ configure = function($) {
       if (this.socketListeners == null) {
         this.socketListeners = {};
       }
-      this.attachSocket(props.socket);
+      if (props.socket != null) {
+        this.attachSocket(props.socket);
+      }
     }
 
     Base.prototype.attachSocket = function(socket) {
       if (this.socket != null) {
-        this.disconnect();
+        this.detachSocket();
       }
       this.socket = socket;
       return this.addSocketListeners();
     };
 
     Base.prototype.detachSocket = function() {
-      if (this.socket == null) {
-        return;
-      }
       this.removeSocketListeners();
       return this.socket = null;
     };

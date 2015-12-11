@@ -53,22 +53,21 @@ configure = ($ = {}) ->
     socketListeners: null
     generateRequestId: $.generateId
 
-    constructor: (props) ->
+    constructor: (props = {}) ->
       @[key] = val for own key, val of props when key isnt "socket"
       @requestEventName ?= $.requestEventName
       @responseEventName ?= $.responseEventName
       @errorEventName ?= $.errorEventName
       @socketListeners ?= {}
-      @attachSocket props.socket
+      @attachSocket props.socket if props.socket?
 
 
     attachSocket: (socket) ->
-      @disconnect() if @socket?
+      @detachSocket()
       @socket = socket
       @addSocketListeners()
 
     detachSocket: ->
-      return unless @socket?
       @removeSocketListeners()
       @socket = null
 
